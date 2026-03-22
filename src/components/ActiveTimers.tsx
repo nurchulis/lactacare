@@ -68,7 +68,7 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
 
   const shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(shortcutName)}`;
 
-  const handleAlarmClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleAlarmClick = () => {
     // Show feedback for 3 seconds
     setFeedback(true);
     setTimeout(() => setFeedback(false), 3000);
