@@ -89,14 +89,14 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
       {log.type === 'pumping' && !isExpired && (
         <div className={cn("flex flex-col gap-2 mt-1 pt-3 border-t", dividerColor)}>
           <a
-            href="shortcuts://"
+            href="shortcuts://run-shortcut?name=Set%20Pumping"
             className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold flex items-center justify-center py-2.5 rounded-lg transition-all shadow-md text-sm gap-2"
           >
             <BellRing size={16} className="animate-pulse" />
             Set Alarm di iPhone
           </a>
           <p className="text-[11px] font-medium opacity-80 leading-tight italic text-center px-1">
-            Untuk pengingat yang lebih akurat, gunakan Shortcut iPhone agar alarm berbunyi tepat waktu.
+            Agar tidak terlewat, gunakan alarm iPhone
           </p>
         </div>
       )}
