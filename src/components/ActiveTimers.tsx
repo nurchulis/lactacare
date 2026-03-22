@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLogStore } from '../store/useLogStore';
 import type { ActivityLog } from '../types';
-import { Clock, AlertCircle } from 'lucide-react';
+import { Clock, AlertCircle, BellRing } from 'lucide-react';
 import { formatDistanceToNowStrict, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { clsx, type ClassValue } from 'clsx';
@@ -33,14 +33,16 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
   
   let statusColor = 'bg-pastel-green text-green-800';
   let iconColor = 'text-green-600';
+  let dividerColor = 'border-green-200/60';
   
   if (isExpired) {
     statusColor = 'bg-pastel-red text-red-800';
     iconColor = 'text-red-600';
+    dividerColor = 'border-red-200/60';
   } else if (progress >= 0.75) {
-    // Top 25% of elapsed time -> nearing expiration
     statusColor = 'bg-pastel-yellow text-yellow-800';
     iconColor = 'text-yellow-600';
+    dividerColor = 'border-yellow-200/60';
   }
 
   const label = log.type === 'pumping' ? 'Pumping berikutnya' : (log.type === 'asi' ? 'Batas Waktu ASI' : 'Batas Waktu Sufor');
@@ -53,32 +55,49 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
     : `${absoluteTime} (${distText} lagi)`;
 
   return (
-    <div className={cn("p-4 rounded-xl flex items-center justify-between shadow-sm transition-colors duration-500", statusColor)}>
-      <div className="flex flex-col gap-1 w-full mr-2">
-        <div className="flex items-center gap-2">
-          {isExpired ? <AlertCircle className={iconColor} size={18} /> : <Clock className={iconColor} size={18} />}
-          <h3 className="font-semibold text-sm opacity-80">{label}</h3>
+    <div className={cn("p-4 rounded-xl flex flex-col gap-3 shadow-sm transition-colors duration-500", statusColor)}>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1 w-full mr-2">
+          <div className="flex items-center gap-2">
+            {isExpired ? <AlertCircle className={iconColor} size={18} /> : <Clock className={iconColor} size={18} />}
+            <h3 className="font-semibold text-sm opacity-80">{label}</h3>
+          </div>
+          <p className="font-bold text-[17px] leading-tight break-words">{timeText}</p>
         </div>
-        <p className="font-bold text-[17px] leading-tight break-words">{timeText}</p>
+        {!isExpired && (
+          <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" className="opacity-30" />
+              <circle 
+                cx="20" 
+                cy="20" 
+                r="16" 
+                stroke="currentColor" 
+                strokeWidth="4" 
+                fill="transparent" 
+                strokeDasharray={2 * Math.PI * 16} 
+                strokeDashoffset={(2 * Math.PI * 16) * (1 - progress)} 
+                strokeLinecap="round" 
+                className="transition-all duration-1000 ease-linear" 
+              />
+            </svg>
+            <span className="sr-only">{Math.round(progress * 100)}%</span>
+          </div>
+        )}
       </div>
-      {!isExpired && (
-        <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" className="opacity-30" />
-            <circle 
-              cx="20" 
-              cy="20" 
-              r="16" 
-              stroke="currentColor" 
-              strokeWidth="4" 
-              fill="transparent" 
-              strokeDasharray={2 * Math.PI * 16} 
-              strokeDashoffset={(2 * Math.PI * 16) * (1 - progress)} 
-              strokeLinecap="round" 
-              className="transition-all duration-1000 ease-linear" 
-            />
-          </svg>
-          <span className="sr-only">{Math.round(progress * 100)}%</span>
+
+      {log.type === 'pumping' && !isExpired && (
+        <div className={cn("flex flex-col gap-2 mt-1 pt-3 border-t", dividerColor)}>
+          <a
+            href="shortcuts://"
+            className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold flex items-center justify-center py-2.5 rounded-lg transition-all shadow-md text-sm gap-2"
+          >
+            <BellRing size={16} className="animate-pulse" />
+            Set Alarm di iPhone
+          </a>
+          <p className="text-[11px] font-medium opacity-80 leading-tight italic text-center px-1">
+            Untuk pengingat yang lebih akurat, gunakan Shortcut iPhone agar alarm berbunyi tepat waktu.
+          </p>
         </div>
       )}
     </div>
