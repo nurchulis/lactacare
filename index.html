@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fdfbf7" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <!-- vite-plugin-pwa injects manifest automatically in some modes, but to be sure we can add it, but wait, vite-plugin-pwa recommends not adding it manually if injectRegister is set. Let's rely on vite-plugin-pwa to inject it, but actually injectRegister='auto' injects the SW, NOT the manifest. Manifest MUST be either manual or injected. No wait, vite-plugin-pwa injects the manifest automatically to index.html during build if includeAssets handles it. Let's add it explicitly for safety or read docs. Actually, manual addition is safest. -->
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
     <title>Lacta Care</title>
   </head>
   <body>
