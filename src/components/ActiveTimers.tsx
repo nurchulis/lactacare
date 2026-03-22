@@ -62,9 +62,22 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
         <p className="font-bold text-[17px] leading-tight break-words">{timeText}</p>
       </div>
       {!isExpired && (
-        <div className="w-10 h-10 rounded-full flex items-center justify-center border-4 border-white/40 shrink-0" style={{
-          background: `conic-gradient(currentColor ${progress * 100}%, transparent 0)`
-        }}>
+        <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" className="opacity-30" />
+            <circle 
+              cx="20" 
+              cy="20" 
+              r="16" 
+              stroke="currentColor" 
+              strokeWidth="4" 
+              fill="transparent" 
+              strokeDasharray={2 * Math.PI * 16} 
+              strokeDashoffset={(2 * Math.PI * 16) * (1 - progress)} 
+              strokeLinecap="round" 
+              className="transition-all duration-1000 ease-linear" 
+            />
+          </svg>
           <span className="sr-only">{Math.round(progress * 100)}%</span>
         </div>
       )}
