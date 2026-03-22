@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLogStore } from '../store/useLogStore';
 import type { ActivityLog } from '../types';
-import { Clock, AlertCircle, BellRing } from 'lucide-react';
+import { Clock, AlertCircle, BellRing, CheckCircle } from 'lucide-react';
 import { formatDistanceToNowStrict, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { clsx, type ClassValue } from 'clsx';
@@ -13,6 +13,7 @@ function cn(...inputs: ClassValue[]) {
 
 const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
   const [now, setNow] = useState(Date.now());
+  const [feedback, setFeedback] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
@@ -54,6 +55,25 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
     ? (log.type === 'pumping' ? 'Masa Pumping Lewat!' : 'Sudah Kedaluwarsa!')
     : `${absoluteTime} (${distText} lagi)`;
 
+  // Dynamic Pumping Shortcut Logic
+  const minutesRemaining = timeRemaining / (1000 * 60);
+  let shortcutName = "Set Pumping";
+  if (minutesRemaining <= 45) {
+    shortcutName = "Set Pumping 30 Menit";
+  } else if (minutesRemaining <= 90) {
+    shortcutName = "Set Pumping 1 Jam";
+  } else if (minutesRemaining <= 150) {
+    shortcutName = "Set Pumping 2 Jam";
+  }
+
+  const shortcutUrl = `shortcuts://run-shortcut?name=${encodeURIComponent(shortcutName)}`;
+
+  const handleAlarmClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Show feedback for 3 seconds
+    setFeedback(true);
+    setTimeout(() => setFeedback(false), 3000);
+  };
+
   return (
     <div className={cn("p-4 rounded-xl flex flex-col gap-3 shadow-sm transition-colors duration-500", statusColor)}>
       <div className="flex items-center justify-between">
@@ -89,15 +109,22 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
       {log.type === 'pumping' && !isExpired && (
         <div className={cn("flex flex-col gap-2 mt-1 pt-3 border-t", dividerColor)}>
           <a
-            href="shortcuts://run-shortcut?name=Set%20Pumping"
+            href={shortcutUrl}
+            onClick={handleAlarmClick}
             className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold flex items-center justify-center py-2.5 rounded-lg transition-all shadow-md text-sm gap-2"
           >
             <BellRing size={16} className="animate-pulse" />
             Set Alarm di iPhone
           </a>
-          <p className="text-[11px] font-medium opacity-80 leading-tight italic text-center px-1">
-            Agar tidak terlewat, gunakan alarm iPhone
-          </p>
+          {feedback ? (
+            <p className="text-[12px] font-bold text-emerald-700 leading-tight italic text-center px-1 flex items-center justify-center gap-1 animate-[fadeIn_0.3s_ease-out]">
+              <CheckCircle size={14} /> Alarm disesuaikan dengan sisa waktu
+            </p>
+          ) : (
+            <p className="text-[11px] font-medium opacity-80 leading-tight italic text-center px-1 animate-[fadeIn_0.3s_ease-out]">
+              Agar tidak terlewat, gunakan alarm iPhone
+            </p>
+          )}
         </div>
       )}
     </div>
