@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLogStore } from '../store/useLogStore';
 import type { ActivityLog } from '../types';
 import { Clock, AlertCircle } from 'lucide-react';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { formatDistanceToNowStrict, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -26,37 +26,43 @@ const TimerCard: React.FC<{ log: ActivityLog }> = ({ log }) => {
     ? (log.type === 'asi' ? 4 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000)
     : (3 * 60 * 60 * 1000);
 
+  const elapsed = now - log.created_at;
+  const progress = Math.min(Math.max(elapsed / totalDuration, 0), 1);
   const timeRemaining = targetTime - now;
-  const progress = Math.max(0, timeRemaining / totalDuration);
   const isExpired = timeRemaining <= 0;
   
   let statusColor = 'bg-pastel-green text-green-800';
   let iconColor = 'text-green-600';
+  
   if (isExpired) {
     statusColor = 'bg-pastel-red text-red-800';
     iconColor = 'text-red-600';
-  } else if (progress <= 0.25) {
+  } else if (progress >= 0.75) {
+    // Top 25% of elapsed time -> nearing expiration
     statusColor = 'bg-pastel-yellow text-yellow-800';
     iconColor = 'text-yellow-600';
   }
 
-  const label = log.type === 'pumping' ? 'Jadwal Pumping' : (log.type === 'asi' ? 'Batas Waktu ASI' : 'Batas Waktu Sufor');
+  const label = log.type === 'pumping' ? 'Pumping berikutnya' : (log.type === 'asi' ? 'Batas Waktu ASI' : 'Batas Waktu Sufor');
+  
+  const absoluteTime = format(targetTime, 'HH:mm');
+  const distText = formatDistanceToNowStrict(targetTime, { locale: localeId });
   
   const timeText = isExpired 
-    ? (log.type === 'pumping' ? 'Sudah Lewat!' : 'Kadetluarsa!')
-    : formatDistanceToNowStrict(targetTime, { locale: localeId });
+    ? (log.type === 'pumping' ? 'Masa Pumping Lewat!' : 'Sudah Kedaluwarsa!')
+    : `${absoluteTime} (${distText} lagi)`;
 
   return (
     <div className={cn("p-4 rounded-xl flex items-center justify-between shadow-sm transition-colors duration-500", statusColor)}>
-      <div className="flex items-center gap-3">
-        {isExpired ? <AlertCircle className={iconColor} size={24} /> : <Clock className={iconColor} size={24} />}
-        <div>
+      <div className="flex flex-col gap-1 w-full mr-2">
+        <div className="flex items-center gap-2">
+          {isExpired ? <AlertCircle className={iconColor} size={18} /> : <Clock className={iconColor} size={18} />}
           <h3 className="font-semibold text-sm opacity-80">{label}</h3>
-          <p className="font-bold text-lg">{timeText}</p>
         </div>
+        <p className="font-bold text-[17px] leading-tight break-words">{timeText}</p>
       </div>
       {!isExpired && (
-        <div className="w-10 h-10 rounded-full flex items-center justify-center border-4 border-white/40" style={{
+        <div className="w-10 h-10 rounded-full flex items-center justify-center border-4 border-white/40 shrink-0" style={{
           background: `conic-gradient(currentColor ${progress * 100}%, transparent 0)`
         }}>
           <span className="sr-only">{Math.round(progress * 100)}%</span>
@@ -76,7 +82,7 @@ export const ActiveTimers: React.FC = () => {
       const bTime = b.expires_at || b.next_reminder_at || 0;
       return aTime - bTime;
     })
-    .slice(0, 3); // Showing at most 3 active timers
+    .slice(0, 3);
 
   if (activeLogs.length === 0) return null;
 
